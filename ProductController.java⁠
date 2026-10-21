@@ -1,0 +1,52 @@
+package com.example.demo.controller;
+
+import com.example.demo.dto.ProductRequestDto;
+import com.example.demo.dto.ProductResponseDto;
+import com.example.demo.service.ProductService;
+import jakarta.validation.Valid;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.net.URI;
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/products")
+public class ProductController {
+
+    private final ProductService productService;
+
+    public ProductController(ProductService productService) {
+        this.productService = productService;
+    }
+
+    @GetMapping
+    public ResponseEntity<List<ProductResponseDto>> getAll() {
+        return ResponseEntity.ok(productService.getAllProducts());
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<ProductResponseDto> getById(@PathVariable Long id) {
+        return ResponseEntity.ok(productService.getProductById(id));
+    }
+
+    @PostMapping
+    public ResponseEntity<ProductResponseDto> create(@Valid @RequestBody ProductRequestDto request) {
+        ProductResponseDto created = productService.createProduct(request);
+        URI location = URI.create("/api/products/" + created.id());
+        return ResponseEntity.created(location).body(created);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<ProductResponseDto> update(
+            @PathVariable Long id,
+            @Valid @RequestBody ProductRequestDto request) {
+        return ResponseEntity.ok(productService.updateProduct(id, request));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        productService.deleteProduct(id);
+        return ResponseEntity.noContent().build();
+    }
+}
